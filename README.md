@@ -7,6 +7,10 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/flipboxlabs/evo.svg?style=flat-square)](https://scrutinizer-ci.com/g/flipboxlabs/evo)
 [![Total Downloads](https://img.shields.io/packagist/dt/flipboxlabs/evo.svg?style=flat-square)](https://packagist.org/packages/flipboxlabs/evo)
 
+##Disclaimer!
+
+This is a *very* experimental package. Use at your own risk.
+
 ## Installation
 
 To install, use composer:
