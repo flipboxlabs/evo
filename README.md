@@ -1,4 +1,4 @@
-# SAML Service Provider for Craft CMS
+# EVO: An Environment Manager for Yii2 and CraftCMS
 [![Join the chat at https://gitter.im/flipboxlabs/evo](https://badges.gitter.im/flipboxlabs/evo.svg)](https://gitter.im/flipboxlabs/evo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Latest Version](https://img.shields.io/github/release/flipboxlabs/evo.svg?style=flat-square)](https://github.com/flipboxlabs/evo/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
