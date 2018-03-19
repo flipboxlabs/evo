@@ -3,6 +3,7 @@
   "type": "project",
   "version": "0.0.1-beta",
   "description":"A Yii2 CLI application for managing environments.",
+  "license":"MIT",
   "bin": [
     "src/evo",
     "bin/get-latest-backup.sh",
