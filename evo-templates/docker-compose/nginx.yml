@@ -1,0 +1,33 @@
+version: "3"
+services:
+    php:
+        image: flipbox/php:72-fpm-alpine
+        volumes:
+            - .:/app/
+            - ./_configs/php.d/general.ini:/usr/local/etc/php/conf.d/general.ini
+            - ./_configs/php.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - db
+        environment:
+            DB_DATABASE: craft
+            SITE_URL: http://craft.localhost
+            SECURITY_KEY: YPJrgtLK7X9Wy4vjUw0aLyiWVgGvpPg3O
+    web:
+        image: nginx:1.13
+        ports:
+            - 80:80
+        volumes:
+            - ./_configs/nginx.d/main.conf:/etc/nginx/conf.d/main.conf
+            - .:/app/
+        depends_on:
+            - php
+    db:
+        image: mysql:5.6
+        restart: always
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: craft
+            MYSQL_USER: craft
+            MYSQL_PASSWORD: craft

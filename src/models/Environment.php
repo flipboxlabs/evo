@@ -1,0 +1,25 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: dsmrt
+ * Date: 3/17/18
+ * Time: 12:40 PM
+ */
+
+namespace flipboxlabs\evo\models;
+
+
+use yii\base\Model;
+
+class Environment extends Model
+{
+    public $name;
+    public $siteUrl;
+    public $webRoot;
+
+    public function __construct($name, array $config = [])
+    {
+        $this->name = $name;
+        parent::__construct($config);
+    }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "flipboxlabs/evo",
+  "type": "project",
+  "version": "0.0.1-beta",
+  "description":"A Yii2 CLI application for managing environments.",
+  "bin": [
+    "src/evo",
+    "bin/get-latest-backup.sh",
+    "bin/mysql-backup.sh",
+    "bin/mysql-backup-server.sh"
+  ],
+  "authors": [
+    {
+      "name": "",
+      "email": "hello@flipboxdigital.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "flipboxlabs\\evo\\": "src/"
+    }
+  },
+  "require": {
+    "yiisoft/yii2": "^2.0.13.0",
+    "aws/aws-sdk-php": "^3.0.0",
+    "twig/twig": "~2.4.4",
+    "symfony/yaml":"^3.0"
+  },
+  "post-create-project-cmd": [
+    "@php vendor/bin/evo"
+  ]
+}
