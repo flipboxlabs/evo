@@ -20,8 +20,15 @@ class EvoConfig extends Model
      */
     protected $environments = [];
 
+    /**
+     * @var string
+     */
+    public $projectName;
+
     public function __construct(string $filePath = null, array $config = [])
     {
+
+        $mergedConfig = [];
 
         if ($filePath) {
             $mergedConfig = array_merge(
@@ -37,6 +44,7 @@ class EvoConfig extends Model
     {
         return array_merge(
             [
+                'projectName',
                 'environments',
             ],
             parent::attributes()

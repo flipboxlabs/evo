@@ -1,0 +1,348 @@
+# vi:syntax=yaml ft=yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation ElasticBeanstalk Create Application
+Parameters:
+  EbApplicationName:
+    Description: Name of the Elastic Beanstalk Application
+    Type: String
+  SolutionStackName:
+    Description: The stack solution
+    AllowedValues:
+    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.1
+    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.0
+    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.6
+    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.5
+    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4
+    Default: 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.1
+    Type: String
+  EC2KeyName:
+    Description: A key pair enables you to securely log into your EC2 instance.
+    Type: AWS::EC2::KeyPair::KeyName
+  SSLCertARN:
+    Description: The ARN of the SSL Cert in IAM. Find by running `aws list-server-certificates`.
+      You can leave this empty.
+    Type: String
+  WorkerEnv:
+    Description: Specify whether to create a worker server as well as a web server.
+    Type: String
+    AllowedValues:
+    - Yes
+    - No
+    Default: No
+Conditions:
+  HasSSLCertInIAM:
+    !Not [ !Equals [!Ref SSLCertARN, ''] ]
+  BuildWorkerEnv:
+    !Equals [!Ref WorkerEnv, Yes]
+Resources:
+  EbWebApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName:
+        Ref: EbApplicationName
+      Description: AWS Elastic Beanstalk Web Application
+  ServiceRole:
+    Type: AWS::IAM::Role
+    DependsOn:
+    - EbWebApplication
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth
+        - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService
+      AssumeRolePolicyDocument:
+        Statement:
+        - Sid: ''
+          Effect: Allow
+          Principal:
+            Service: elasticbeanstalk.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              sts:ExternalId: elasticbeanstalk
+      Path: "/"
+  ServiceRolePolicies:
+    Type: AWS::IAM::Policy
+    DependsOn:
+      - ServiceRole
+    Properties:
+      PolicyName:
+        Fn::Join:
+        - "-"
+        - - Ref: EbWebApplication
+          - Policy
+      PolicyDocument:
+        Statement:
+        - Sid: AllowCloudformationOperationsOnElasticBeanstalkStacks
+          Effect: Allow
+          Action:
+          - cloudformation:*
+          Resource:
+          - arn:aws:cloudformation:*:*:stack/awseb-*
+          - arn:aws:cloudformation:*:*:stack/eb-*
+        - Sid: AllowS3OperationsOnElasticBeanstalkBuckets
+          Effect: Allow
+          Action:
+          - s3:*
+          Resource:
+          - arn:aws:s3:::elasticbeanstalk-*
+          - arn:aws:s3:::elasticbeanstalk-*/*
+        - Sid: AllowOperations
+          Effect: Allow
+          Action:
+          - autoscaling:AttachInstances
+          - autoscaling:CreateAutoScalingGroup
+          - autoscaling:CreateLaunchConfiguration
+          - autoscaling:DeleteLaunchConfiguration
+          - autoscaling:DeleteAutoScalingGroup
+          - autoscaling:DeleteScheduledAction
+          - autoscaling:DescribeAccountLimits
+          - autoscaling:DescribeAutoScalingGroups
+          - autoscaling:DescribeAutoScalingInstances
+          - autoscaling:DescribeLaunchConfigurations
+          - autoscaling:DescribeLoadBalancers
+          - autoscaling:DescribeNotificationConfigurations
+          - autoscaling:DescribeScalingActivities
+          - autoscaling:DescribeScheduledActions
+          - autoscaling:DetachInstances
+          - autoscaling:PutScheduledUpdateGroupAction
+          - autoscaling:ResumeProcesses
+          - autoscaling:SetDesiredCapacity
+          - autoscaling:SuspendProcesses
+          - autoscaling:TerminateInstanceInAutoScalingGroup
+          - autoscaling:UpdateAutoScalingGroup
+          - cloudwatch:PutMetricAlarm
+          - ec2:AuthorizeSecurityGroupEgress
+          - ec2:AuthorizeSecurityGroupIngress
+          - ec2:CreateSecurityGroup
+          - ec2:DeleteSecurityGroup
+          - ec2:DescribeAccountAttributes
+          - ec2:DescribeImages
+          - ec2:DescribeInstances
+          - ec2:DescribeKeyPairs
+          - ec2:DescribeSecurityGroups
+          - ec2:DescribeSubnets
+          - ec2:DescribeVpcs
+          - ec2:RevokeSecurityGroupEgress
+          - ec2:RevokeSecurityGroupIngress
+          - ec2:TerminateInstances
+          - ecs:CreateCluster
+          - ecs:DeleteCluster
+          - ecs:DescribeClusters
+          - ecs:RegisterTaskDefinition
+          - elasticbeanstalk:*
+          - elasticloadbalancing:ApplySecurityGroupsToLoadBalancer
+          - elasticloadbalancing:ConfigureHealthCheck
+          - elasticloadbalancing:CreateLoadBalancer
+          - elasticloadbalancing:DeleteLoadBalancer
+          - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+          - elasticloadbalancing:DescribeInstanceHealth
+          - elasticloadbalancing:DescribeLoadBalancers
+          - elasticloadbalancing:DescribeTargetHealth
+          - elasticloadbalancing:DescribeTargetGroups
+          - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+          - iam:ListRoles
+          - iam:PassRole
+          - logs:CreateLogGroup
+          - logs:PutRetentionPolicy
+          - rds:DescribeDBInstances
+          - rds:DescribeOrderableDBInstanceOptions
+          - s3:CopyObject
+          - s3:GetObject
+          - s3:GetObjectAcl
+          - s3:GetObjectMetadata
+          - s3:ListBucket
+          - s3:listBuckets
+          - s3:ListObjects
+          - sns:CreateTopic
+          - sns:GetTopicAttributes
+          - sns:ListSubscriptionsByTopic
+          - sns:Subscribe
+          - sqs:GetQueueAttributes
+          - sqs:GetQueueUrl
+          Resource:
+          - "*"
+      Roles:
+      - Ref: ServiceRole
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+          - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+          - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+  InstanceRolePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: InstanceRole
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - rds-db:connect
+          Resource:
+          - arn:aws:rds-db:::dbuser:*/production
+          - arn:aws:rds-db:::dbuser:*/staging
+          - arn:aws:rds-db:::dbuser:*/development
+        - Effect: Allow
+          Action:
+          - ec2:Describe*
+          - autoscaling:Describe*
+          - elasticloadbalancing:Describe*
+          - cloudwatch:ListMetrics
+          - cloudwatch:GetMetricStatistics
+          - cloudwatch:Describe*
+          - cloudformation:Describe*
+          - cloudformation:GetTemplate
+          - s3:*
+          - logs:*
+          - elasticache:DescribeCacheClusters
+          - lambda:GetAlias
+          - lambda:GetFunction
+          - lambda:InvokeAsync
+          - lambda:InvokeFunction
+          - lambda:ListAliases
+          - lambda:ListEventSourceMappings
+          - lambda:ListFunctions
+          - lambda:ListVersionsByFunction
+          - codecommit:BatchGetRepositories
+          - codecommit:Get*
+          - codecommit:GitPull
+          - codecommit:List*
+          Resource: "*"
+      Roles:
+      - Ref: InstanceRole
+  InstanceRoleInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: InstanceRole
+  EbProdConfig:
+    Type: AWS::ElasticBeanstalk::Environment
+    DependsOn:
+      - ServiceRole
+      - InstanceRoleInstanceProfile
+    Properties:
+      ApplicationName:
+        Ref: EbApplicationName
+      EnvironmentName:
+        !Join [ "-", [ !Ref EbWebApplication, "Production" ] ]
+      SolutionStackName:
+        Ref: SolutionStackName
+      OptionSettings:
+      - Namespace: aws:elbv2:listener:443
+        OptionName: Protocol
+        Value: HTTPS
+      - Namespace: aws:elbv2:listener:80
+        OptionName: Protocol
+        Value: HTTP
+      - !If
+        - HasSSLCertInIAM
+        -
+            Namespace: aws:elbv2:listener:443
+            OptionName: SSLCertificateArns
+            Value:
+                Ref: SSLCertARN
+        - Ref: AWS::NoValue
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: IamInstanceProfile
+        Value:
+          Ref: InstanceRoleInstanceProfile
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: LoadBalancerType
+        Value: application
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: ServiceRole
+        Value:
+          Ref: ServiceRole
+      - Namespace: aws:elasticbeanstalk:healthreporting:system
+        OptionName: SystemType
+        Value: enhanced
+      - Namespace: aws:elasticbeanstalk:managedactions
+        OptionName: ManagedActionsEnabled
+        Value: true
+      - Namespace: aws:elasticbeanstalk:managedactions
+        OptionName: PreferredStartTime
+        Value: Sat:06:00
+      - Namespace: aws:elasticbeanstalk:managedactions:platformupdate
+        OptionName: UpdateLevel
+        Value: minor
+      - Namespace: aws:elasticbeanstalk:managedactions:platformupdate
+        OptionName: InstanceRefreshEnabled
+        Value: true
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: EC2KeyName
+        Value:
+          Ref: EC2KeyName
+  EbProdWorkerConfig:
+    Condition: BuildWorkerEnv
+    Type: AWS::ElasticBeanstalk::Environment
+    DependsOn:
+      - ServiceRole
+      - InstanceRoleInstanceProfile
+    Properties:
+      ApplicationName:
+        Ref: EbApplicationName
+      EnvironmentName:
+        !Join [ "-", [ !Ref EbWebApplication, "Production-Worker" ] ]
+      SolutionStackName:
+        Ref: SolutionStackName
+      Tier:
+          Name: Worker
+          Type: SQS/HTTP
+      OptionSettings:
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: IamInstanceProfile
+        Value:
+          Ref: InstanceRoleInstanceProfile
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: LoadBalancerType
+        Value: application
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: ServiceRole
+        Value:
+          Ref: ServiceRole
+      - Namespace: aws:elasticbeanstalk:healthreporting:system
+        OptionName: SystemType
+        Value: enhanced
+      - Namespace: aws:elasticbeanstalk:managedactions
+        OptionName: ManagedActionsEnabled
+        Value: true
+      - Namespace: aws:elasticbeanstalk:managedactions
+        OptionName: PreferredStartTime
+        Value: Sat:06:00
+      - Namespace: aws:elasticbeanstalk:managedactions:platformupdate
+        OptionName: UpdateLevel
+        Value: minor
+      - Namespace: aws:elasticbeanstalk:managedactions:platformupdate
+        OptionName: InstanceRefreshEnabled
+        Value: true
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: EC2KeyName
+        Value:
+          Ref: EC2KeyName
+
+Outputs:
+  URL:
+    Description: Eb Applcation Logical Id
+    Value:
+      Ref: EbWebApplication
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-EbWebApplication"
+  InstanceProfile:
+    Description: 'InstanceProfile ... '
+    Value:
+      Ref: InstanceRoleInstanceProfile
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-InstanceProfile"

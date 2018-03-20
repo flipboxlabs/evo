@@ -16,10 +16,21 @@ class Environment extends Model
     public $name;
     public $siteUrl;
     public $webRoot;
+    public $profile;
 
     public function __construct($name, array $config = [])
     {
         $this->name = $name;
         parent::__construct($config);
+    }
+
+    public function attributeLabels()
+    {
+        return array_merge(
+            [
+                'profile' => 'AWS Profile',
+            ],
+            parent::attributeLabels()
+        );
     }
 }

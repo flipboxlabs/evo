@@ -12,6 +12,7 @@ use flipboxlabs\evo\Evo;
 use flipboxlabs\evo\models\Environment;
 use flipboxlabs\evo\models\EvoConfig;
 use Symfony\Component\Yaml\Yaml;
+use yii\base\Model;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -22,6 +23,27 @@ class EvoController extends Controller
     const TEMPLATES = EVO_ROOT . '/evo-templates';
     const DOCKER_TEMPLATES = self::TEMPLATES . '/docker-compose';
 
+    protected function loopAndSetAttributes(Model $model)
+    {
+        foreach ($model->getAttributes() as $key => $attribute) {
+            if (is_array($attribute)) {
+                continue;
+            }
+            $model->{$key} = $this->prompt(
+                $this->ansiFormat($model->getAttributeLabel($key), Console::FG_YELLOW), [
+                'default' => $attribute,
+            ]);
+        }
+
+    }
+
+    /**
+     * @param $environmentName
+     * @return int
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     */
     public function actionIndex($environmentName)
     {
 
@@ -33,7 +55,7 @@ class EvoController extends Controller
         );
 
         if (file_exists($location)) {
-            $this->stdout('File exists ... reading file.');
+            $this->stdout('File exists ... reading file.' . PHP_EOL, Console::FG_CYAN);
             $config = new EvoConfig($location);
         } else {
             $config = new EvoConfig();
@@ -45,16 +67,13 @@ class EvoController extends Controller
             );
         }
 
+        $this->stdout('Set the following variables for this project:' . PHP_EOL, Console::FG_CYAN);
+        $this->loopAndSetAttributes($config);
 
-        $this->stdout('Set the following variables for this environment:' . PHP_EOL, Console::FG_YELLOW);
-        foreach ($environment->getAttributes() as $key => $attribute) {
-            $environment->{$key} = $this->prompt(
-                $this->ansiFormat($key, Console::FG_YELLOW), [
-                'default' => $attribute,
-            ]);
-        }
+        $this->stdout('Set the following variables for this environment:' . PHP_EOL, Console::FG_CYAN);
+        $this->loopAndSetAttributes($environment);
 
-        $this->stdout('File looks like this and will be saved here: ' . $location . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('File looks like this and will be saved here: ' . $location . PHP_EOL, Console::FG_CYAN);
         $this->stdout(Yaml::dump($config->toArray(), 4) . PHP_EOL, Console::FG_GREEN);
 
         if (! $this->confirm(

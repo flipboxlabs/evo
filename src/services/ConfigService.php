@@ -9,6 +9,8 @@
 namespace flipboxlabs\evo\services;
 
 
+use flipboxlabs\evo\constants\TwigTemplates;
+use flipboxlabs\evo\Evo;
 use flipboxlabs\evo\models\EvoConfig;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Component;
@@ -54,6 +56,9 @@ class ConfigService extends Component
      * @param EvoConfig $config
      * @param bool $validate
      * @return bool
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public function save(EvoConfig $config, $validate = true)
     {
@@ -64,7 +69,9 @@ class ConfigService extends Component
         }
 
         if ($config->validate()) {
-            $result = false !== file_put_contents($this->file, Yaml::dump($config->toArray(), 4));
+            $contents = Evo::getInstance()->getTwig()->render(TwigTemplates::CONFIG_HEADER, []);
+            $result = false !== file_put_contents($this->file,
+                    $contents . Yaml::dump($config->toArray(), 4));
         }
 
         return $result;

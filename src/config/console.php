@@ -19,5 +19,6 @@ return [
     ],
     'components'          => [
         'config' => \flipboxlabs\evo\services\ConfigService::class,
+        'twig'   => \flipboxlabs\evo\services\Twig::class,
     ]
 ];

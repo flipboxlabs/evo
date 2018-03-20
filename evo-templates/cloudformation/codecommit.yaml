@@ -1,0 +1,16 @@
+# vi:syntax=yaml ft=yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation ElasticBeanstalk Create Application
+Parameters:
+    RepoName:
+        Description: Name of the repo
+        Type: String
+    RepoDescription:
+        Description: A description for the repo
+        Type: String
+Resources:
+    Repo:
+        Type: "AWS::CodeCommit::Repository"
+        Properties: 
+            RepositoryDescription: String
+            RepositoryName: String
