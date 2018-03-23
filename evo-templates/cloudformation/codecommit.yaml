@@ -12,5 +12,5 @@ Resources:
     Repo:
         Type: "AWS::CodeCommit::Repository"
         Properties: 
-            RepositoryDescription: String
-            RepositoryName: String
+            RepositoryDescription: !Ref RepoName
+            RepositoryName: !Ref RepoDescription

@@ -14,15 +14,17 @@ use flipboxlabs\evo\modules\docker\models\NginxComposeFile as NginxModel;
 
 class NginxComposeFile extends AbstractComposeFile
 {
+    const PHP_72 = 'flipbox/php:72-fpm-alpine';
+    const NGINX_1_13 = 'nginx:1.13';
 
     const PHP_IMAGES = [
-        'latest' => 'flipbox/php:72-fpm-alpine',
-        'php-72' => 'flipbox/php:72-fpm-alpine',
+        'latest' => self::PHP_72,
+        'php-72' => self::PHP_72,
     ];
 
     const WEB_IMAGES = [
-        'latest' => 'nginx:1.13',
-        '1.13'   => 'nginx:1.13',
+        'latest' => self::NGINX_1_13,
+        '1.13'   => self::NGINX_1_13,
     ];
 
     const WEB_VOLUMES_DIR = EVO_ROOT . '/evo-templates/nginx.d/';

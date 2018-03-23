@@ -17,6 +17,7 @@ class Environment extends Model
     public $siteUrl;
     public $webRoot;
     public $profile;
+    public $region;
 
     public function __construct($name, array $config = [])
     {
@@ -29,6 +30,7 @@ class Environment extends Model
         return array_merge(
             [
                 'profile' => 'AWS Profile',
+                'region'  => 'AWS Region',
             ],
             parent::attributeLabels()
         );

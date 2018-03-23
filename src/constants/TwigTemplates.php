@@ -9,8 +9,15 @@
 namespace flipboxlabs\evo\constants;
 
 
-class TwigTemplates
+class TwigTemplates implements ConstantsInterface
 {
 
     const CONFIG_HEADER = 'evo/config.twig';
+
+    public static function all(): array
+    {
+        return [
+            self::CONFIG_HEADER,
+        ];
+    }
 }

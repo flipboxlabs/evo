@@ -8,6 +8,7 @@
 
 namespace flipboxlabs\evo;
 
+use flipboxlabs\evo\modules\cloudformation\Cloudformation;
 use flipboxlabs\evo\modules\docker\Docker;
 use flipboxlabs\evo\modules\webserver\WebServer;
 use flipboxlabs\evo\services\ConfigService;
@@ -32,6 +33,14 @@ class Evo extends Application
     public function getWebServer()
     {
         return $this->getModule('webserver');
+    }
+
+    /**
+     * @return Cloudformation
+     */
+    public function getCloudformation()
+    {
+        return $this->getModule('cloudformation');
     }
 
     /**

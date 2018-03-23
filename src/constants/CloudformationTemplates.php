@@ -9,9 +9,17 @@
 namespace flipboxlabs\evo\constants;
 
 
-class CloudformationTemplates
+class CloudformationTemplates implements ConstantsInterface
 {
     const EVO_CF_ROOT = EVO_ROOT . '/evo-templates/cloudformation';
     const CODECOMMIT = self::EVO_CF_ROOT . '/codecommit.yaml';
     const EB = self::EVO_CF_ROOT . '/eb.yaml';
+
+    public static function all(): array
+    {
+        return [
+            self::CODECOMMIT,
+            self::EB,
+        ];
+    }
 }

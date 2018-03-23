@@ -12,10 +12,12 @@ return [
         'config' => \flipboxlabs\evo\controllers\EvoController::class,
         'dotenv' => \flipboxlabs\evo\controllers\ParamController::class,
         'docker' => \flipboxlabs\evo\modules\docker\controllers\DefaultController::class,
+        'cloudformation' => \flipboxlabs\evo\modules\cloudformation\controllers\DefaultController::class,
     ],
     'modules'             => [
-        'docker'    => \flipboxlabs\evo\modules\docker\Docker::class,
-        'webserver' => \flipboxlabs\evo\modules\webserver\WebServer::class,
+        'docker'         => \flipboxlabs\evo\modules\docker\Docker::class,
+        'webserver'      => \flipboxlabs\evo\modules\webserver\WebServer::class,
+        'cloudformation' => \flipboxlabs\evo\modules\cloudformation\Cloudformation::class,
     ],
     'components'          => [
         'config' => \flipboxlabs\evo\services\ConfigService::class,

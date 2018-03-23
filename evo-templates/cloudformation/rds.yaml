@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation RDS Create Cluster
+Parameters:
+    WhiteListLocation:
+        Description: "The IP address range that can be used to SSH to the EC2 instances or connect to the RDS DB"
+        Type: "String"
+        MinLength: "9"
+        MaxLength: "18"
+        AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x."
+    DBEngine:
+        Description: "DB Engine Type"
+        Type: "String"
+        Default: "aurora"
+        AllowedValues:
+            - "aurora"
+    DBName:
+        Description: "Name of the database that the application will use."
+        Type: "String"
+        Default: "craft"
+    DBUser:
+        Description: "DB root username."
+        Type: "String"
+        MinLength: "1"
+        MaxLength: "41"
+        AllowedPattern: "[a-zA-Z0-9]+"
+        ConstraintDescription: "Must be alphanumeric and not exceed 41 characters."
+    DBPassword:
+        Description: "DB root password."
+        Type: "String"
+        NoEcho: "true"
+        MinLength: "1"
+        MaxLength: "41"
+        AllowedPattern: "[a-zA-Z0-9]+"
+        ConstraintDescription: "Must be alphanumeric and not exceed 41 characters."
+    DBInstanceClass:
+        Description: "The database instance type. If using Aurora, you must choose one of the *.r3.* instances."
+        Type: "String"
+        Default: "db.t2.small"
+        AllowedValues:
+            - "db.t2.small"
+            - "db.t2.medium"
+            - "db.r3.large"
+            - "db.r3.xlarge"
+            - "db.r3.2xlarge"
+            - "db.r3.4xlarge"
+            - "db.r3.8xlarge"
+            - "db.r4.large"
+            - "db.r4.xlarge"
+            - "db.r4.2xlarge"
+            - "db.r4.4xlarge"
+            - "db.r4.8xlarge"
+            - "db.r4.16xlarge"
+        ConstraintDescription: "must select a valid database instance type."
+    DBClusterCount:
+        Description: "Have one or two instances in the cluster?"
+        Type: "Number"
+        Default: 2
+        AllowedValues:
+            - "1"
+            - "2"
+    PubliclyAccessible:
+        Description: "Should this db be publicly accessible?"
+        Type: "String"
+        AllowedValues:
+            - "true"
+            - "false"
+        Default: true
+Conditions:
+    CreateTwoInstances: !Equals [!Ref DBClusterCount, 2]
+Resources:
+    DBRole:
+        Type: "AWS::IAM::Role"
+        Properties:
+            RoleName: !Join [ "-", [ !Ref "AWS::StackName", !Ref "AWS::Region", "Rds-Role" ] ]
+            Policies:
+                -
+                    PolicyName: !Join [ "-", [ !Ref "AWS::StackName", "Rds-S3-Role" ] ]
+                    PolicyDocument:
+                        Version: "2012-10-17"
+                        Statement:
+                            -
+                                Effect: "Allow"
+                                Action:
+                                    - "s3:GetObject"
+                                    - "s3:GetObjectVersion"
+                                Resource:
+                                    -  "arn:aws:s3:::*/*"
+                -
+                    PolicyName: !Join [ "-", [ !Ref "AWS::StackName", "Rds-Lambda-Role" ] ]
+                    PolicyDocument:
+                        Version: "2012-10-17"
+                        Statement:
+                            -
+                                Effect: "Allow"
+                                Action:
+                                    - "lambda:InvokeAsync"
+                                    - "lambda:InvokeFunction"
+                                Resource:
+                                    -  "arn:aws:lambda:*:*:function:*"
+                -
+                    PolicyName: !Join [ "-", [ !Ref "AWS::StackName", "Rds-Logs-Role" ] ]
+                    PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          -
+                              Effect: "Allow"
+                              Action:
+                                  - "logs:*"
+                              Resource: "*"
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    -
+                        Effect: "Allow"
+                        Principal:
+                            Service:
+                                "rds.amazonaws.com"
+                        Action:
+                            - "sts:AssumeRole"
+    DBParameterGroup:
+        Type: "AWS::RDS::DBClusterParameterGroup"
+        DependsOn: DBRole
+        Properties: 
+            Description: "Parameter group to associate an IAM role with the cluster."
+            Family: "aurora5.6"
+            Parameters:
+                aws_default_s3_role: !GetAtt DBRole.Arn
+                aws_default_lambda_role: !GetAtt DBRole.Arn
+            Tags:
+                -
+                    Key: "Stack"
+                    Value: !Ref AWS::StackName
+    DBSecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupName: !Join [ "-", [ !Ref "AWS::StackName", "Rds-SecurityGroup" ] ]
+            GroupDescription: "Open database for access"
+            SecurityGroupIngress:
+                -
+                    IpProtocol: "tcp"
+                    FromPort: "3306"
+                    ToPort: "3306"
+                    CidrIp:
+                       !Ref "WhiteListLocation"
+    DBClusterAurora:
+        Type: "AWS::RDS::DBCluster"
+        DependsOn:
+            - DBSecurityGroup
+            - DBParameterGroup
+        Properties:
+            Engine: !Ref DBEngine
+            DatabaseName: !Ref DBName
+            MasterUsername: !Ref DBUser
+            MasterUserPassword: !Ref DBPassword
+            VpcSecurityGroupIds:
+                - !GetAtt DBSecurityGroup.GroupId
+            DBClusterParameterGroupName: !Ref DBParameterGroup
+    DBInstanceAurora1:
+        Type: "AWS::RDS::DBInstance"
+        DependsOn: DBClusterAurora
+        Properties:
+              Engine: !Ref DBEngine
+              PubliclyAccessible: !Ref PubliclyAccessible
+              DBInstanceClass: !Ref DBInstanceClass
+              DBClusterIdentifier: !Ref DBClusterAurora
+    DBInstanceAurora2:
+        Type: "AWS::RDS::DBInstance"
+        DependsOn: DBClusterAurora
+        Condition: CreateTwoInstances
+        Properties:
+            Engine: !Ref DBEngine
+            PubliclyAccessible: !Ref PubliclyAccessible
+            DBInstanceClass: !Ref DBInstanceClass
+            DBClusterIdentifier: !Ref DBClusterAurora
+Outputs: 
+    Endpoint:
+        Description: The endpoint
+        Value: !GetAtt "DBClusterAurora.Endpoint.Address"
+        Export:
+            Name: !Sub "${AWS::StackName}-RdsEndpoint"
+

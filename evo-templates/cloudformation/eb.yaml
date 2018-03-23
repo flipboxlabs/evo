@@ -8,12 +8,10 @@ Parameters:
   SolutionStackName:
     Description: The stack solution
     AllowedValues:
-    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.1
-    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.0
-    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.6
-    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.5
-    - 64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4
-    Default: 64bit Amazon Linux 2017.09 v2.6.0 running PHP 7.1
+    - 64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.1
+    - 64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.0
+    - 64bit Amazon Linux 2017.09 v2.6.5 running PHP 5.6
+    Default: 64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.1
     Type: String
   EC2KeyName:
     Description: A key pair enables you to securely log into your EC2 instance.
@@ -22,6 +20,7 @@ Parameters:
     Description: The ARN of the SSL Cert in IAM. Find by running `aws list-server-certificates`.
       You can leave this empty.
     Type: String
+    Default: ''
   WorkerEnv:
     Description: Specify whether to create a worker server as well as a web server.
     Type: String
@@ -30,8 +29,8 @@ Parameters:
     - No
     Default: No
 Conditions:
-  HasSSLCertInIAM:
-    !Not [ !Equals [!Ref SSLCertARN, ''] ]
+  NotHasSSLCertInIAM:
+    !Equals [!Ref SSLCertARN, '']
   BuildWorkerEnv:
     !Equals [!Ref WorkerEnv, Yes]
 Resources:
@@ -187,6 +186,21 @@ Resources:
         Statement:
         - Effect: Allow
           Action:
+          - "ssm:GetParameters"
+          Resource:
+          - !Sub
+            - 'arn:aws:ssm:*:*:parameter/dotenv/${EbApplicationName}/*'
+            - { EbApplicationName: !Ref EbApplicationName }
+        - Effect: Allow
+          Action:
+          - kms:ListKeys
+          - kms:ListAliases
+          - kms:Describe*
+          - kms:Decrypt
+          Resource:
+          - arn:aws:kms:*:*:alias/aws/ssm
+        - Effect: Allow
+          Action:
           - rds-db:connect
           Resource:
           - arn:aws:rds-db:::dbuser:*/production
@@ -239,20 +253,26 @@ Resources:
       SolutionStackName:
         Ref: SolutionStackName
       OptionSettings:
-      - Namespace: aws:elbv2:listener:443
-        OptionName: Protocol
-        Value: HTTPS
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: InstanceType
+        Value: t2.small
+      - !If
+        - NotHasSSLCertInIAM
+        - Ref: AWS::NoValue
+        -
+          Namespace: aws:elbv2:listener:443
+          OptionName: SSLCertificateArns
+          Value: !Ref SSLCertARN
+      - !If
+        - NotHasSSLCertInIAM
+        - Ref: AWS::NoValue
+        -
+          Namespace: aws:elbv2:listener:443
+          OptionName: Protocol
+          Value: HTTPS
       - Namespace: aws:elbv2:listener:80
         OptionName: Protocol
         Value: HTTP
-      - !If
-        - HasSSLCertInIAM
-        -
-            Namespace: aws:elbv2:listener:443
-            OptionName: SSLCertificateArns
-            Value:
-                Ref: SSLCertARN
-        - Ref: AWS::NoValue
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: IamInstanceProfile
         Value:
@@ -333,6 +353,11 @@ Resources:
 
 Outputs:
   URL:
+    Description: Eb Environment endpoint
+    Value: !GetAtt EbProdConfig.EndpointURL
+    Export:
+      Name: !Sub "${AWS::StackName}-EndpointURL"
+  AppLogicalId:
     Description: Eb Applcation Logical Id
     Value:
       Ref: EbWebApplication
