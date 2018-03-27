@@ -14,7 +14,7 @@ use flipboxlabs\evo\modules\parameter\models\DotEnv;
 
 class Parameter extends Client
 {
-    const PARAMETER_NAMESPACE = '/evo/';
+    const PARAMETER_NAMESPACE = '/evo';
 
     public function getClient($config = [])
     {
@@ -100,8 +100,14 @@ class Parameter extends Client
      */
     public function makeName($name = null)
     {
+        $config = Evo::getInstance()->getConfig()->load();
         $env = Evo::getInstance()->getConfig()->getEnvironment();
-        return static::PARAMETER_NAMESPACE . $env->name . '/' . ($name ?: '');
+        return implode('/', [
+            static::PARAMETER_NAMESPACE,
+            $config->ebApplicationName,
+            $env->name,
+            ($name ?: '')
+        ]);
     }
 
     /**

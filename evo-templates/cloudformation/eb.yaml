@@ -189,7 +189,7 @@ Resources:
           - "ssm:GetParameters"
           Resource:
           - !Sub
-            - 'arn:aws:ssm:*:*:parameter/dotenv/${EbApplicationName}/*'
+            - 'arn:aws:ssm:*:*:parameter/evo/${EbApplicationName}/*'
             - { EbApplicationName: !Ref EbApplicationName }
         - Effect: Allow
           Action:

@@ -25,6 +25,11 @@ class EvoConfig extends Model
      */
     public $projectName;
 
+    /**
+     * @var string
+     */
+    public $ebApplicationName;
+
     public function __construct(string $filePath = null, array $config = [])
     {
 
@@ -45,6 +50,7 @@ class EvoConfig extends Model
         return array_merge(
             [
                 'projectName',
+                'ebApplicationName',
                 'environments',
             ],
             parent::attributes()
