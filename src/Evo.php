@@ -8,8 +8,10 @@
 
 namespace flipboxlabs\evo;
 
+use flipboxlabs\evo\modules\aws\Aws;
 use flipboxlabs\evo\modules\cloudformation\Cloudformation;
 use flipboxlabs\evo\modules\docker\Docker;
+use flipboxlabs\evo\modules\parameter\Parameter;
 use flipboxlabs\evo\modules\webserver\WebServer;
 use flipboxlabs\evo\services\ConfigService;
 use flipboxlabs\evo\services\Twig;
@@ -20,11 +22,39 @@ class Evo extends Application
     public $enableCoreCommands = false;
 
     /**
+     * Modules
+     */
+
+    /**
+     * @return Aws
+     */
+    public function getAws()
+    {
+        return $this->getModule('aws');
+    }
+
+    /**
+     * @return Cloudformation
+     */
+    public function getCloudformation()
+    {
+        return $this->getModule('cloudformation');
+    }
+
+    /**
      * @return Docker
      */
     public function getDocker()
     {
         return $this->getModule('docker');
+    }
+
+    /**
+     * @return Parameter
+     */
+    public function getParameter()
+    {
+        return $this->getModule('parameter');
     }
 
     /**
@@ -36,12 +66,8 @@ class Evo extends Application
     }
 
     /**
-     * @return Cloudformation
+     * Components
      */
-    public function getCloudformation()
-    {
-        return $this->getModule('cloudformation');
-    }
 
     /**
      * @return ConfigService
@@ -58,4 +84,5 @@ class Evo extends Application
     {
         return $this->get('twig');
     }
+
 }

@@ -83,6 +83,23 @@ class EvoConfig extends Model
     }
 
     /**
+     * @param $name
+     * @return Environment|null
+     */
+    public function getEnvironmentByEbName($name)
+    {
+        $returnEnvironment = null;
+        foreach ($this->environments as $environment) {
+            if ($environment->ebEnvironmentName === $name) {
+                $returnEnvironment = $environment;
+                break;
+            }
+        }
+
+        return $returnEnvironment;
+    }
+
+    /**
      * @param Environment $environment
      * @return $this
      */

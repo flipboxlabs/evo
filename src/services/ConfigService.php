@@ -11,6 +11,8 @@ namespace flipboxlabs\evo\services;
 
 use flipboxlabs\evo\constants\TwigTemplates;
 use flipboxlabs\evo\Evo;
+use flipboxlabs\evo\constants\Evo as EvoConstants;
+use flipboxlabs\evo\models\Environment;
 use flipboxlabs\evo\models\EvoConfig;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Component;
@@ -25,16 +27,65 @@ use yii\base\Component;
  */
 class ConfigService extends Component
 {
-    const EVO_CONFIG_DIR = APP_ROOT . '/.evo';
-    const EVO_CONFIG_FILE = self::EVO_CONFIG_DIR . '/config';
 
-    public $file = self::EVO_CONFIG_FILE;
+    public $file = EvoConstants::EVO_CONFIG_FILE;
     /**
      * @var EvoConfig
      */
-    public $config = [];
+    public $config;
 
+    /**
+     * @var Environment|null
+     */
+    protected $environment;
 
+    /**
+     * @param Environment $environment
+     * @return $this
+     */
+    public function setEnvironment(Environment $environment)
+    {
+        $this->environment = $environment;
+        return $this;
+    }
+
+    public function getEnvironment()
+    {
+        return $this->environment;
+    }
+
+    /**
+     * @return EvoConfig
+     */
+    public function load()
+    {
+        if (! $this->config) {
+            $this->config = new EvoConfig(
+                $this->file
+            );
+        }
+
+        return $this->config;
+    }
+
+    public function configExists()
+    {
+        return file_exists(EvoConstants::EVO_CONFIG_FILE);
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getContents()
+    {
+        return file_get_contents(EvoConstants::EVO_CONFIG_FILE);
+    }
+
+    /**
+     * @param string $filePath
+     * @param array $config
+     * @return array
+     */
     public function mergeConfig(string $filePath, array $config = [])
     {
         $this->file = $filePath;
@@ -64,8 +115,8 @@ class ConfigService extends Component
     {
         $result = false;
 
-        if (! file_exists(static::EVO_CONFIG_DIR)) {
-            mkdir(static::EVO_CONFIG_DIR);
+        if (! file_exists(EvoConstants::EVO_CONFIG_DIR)) {
+            mkdir(EvoConstants::EVO_CONFIG_DIR);
         }
 
         if ($config->validate()) {

@@ -11,6 +11,7 @@ namespace flipboxlabs\evo\controllers;
 use flipboxlabs\evo\Evo;
 use flipboxlabs\evo\models\Environment;
 use flipboxlabs\evo\models\EvoConfig;
+use flipboxlabs\evo\constants\Evo as EvoConstants;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Model;
 use yii\console\Controller;
@@ -19,10 +20,6 @@ use yii\helpers\Console;
 
 class EvoController extends Controller
 {
-    const DEFAULT_CONFIG_LOCATION = APP_ROOT . '/.evo/config';
-    const TEMPLATES = EVO_ROOT . '/evo-templates';
-    const DOCKER_TEMPLATES = self::TEMPLATES . '/docker-compose';
-
     protected function loopAndSetAttributes(Model $model)
     {
         foreach ($model->getAttributes() as $key => $attribute) {
@@ -33,6 +30,7 @@ class EvoController extends Controller
                 $this->ansiFormat($model->getAttributeLabel($key), Console::FG_YELLOW), [
                 'default' => $attribute,
             ]);
+
         }
 
     }
@@ -50,7 +48,7 @@ class EvoController extends Controller
         $location = $this->prompt(
             $this->ansiFormat('Set default config location.', Console::FG_YELLOW),
             [
-                'default' => static::DEFAULT_CONFIG_LOCATION,
+                'default' => EvoConstants::EVO_CONFIG_FILE,
             ]
         );
 
@@ -90,6 +88,29 @@ class EvoController extends Controller
 
         $this->stdout('Environment saved!', Console::FG_GREEN);
         return ExitCode::OK;
+    }
+
+
+    /**
+     * Dumps the .evo/config file to stdout
+     * @return int
+     */
+    public function actionCat()
+    {
+        if(!Evo::getInstance()->getConfig()->configExists()){
+            $this->stderr('Could not find config!'. PHP_EOL, Console::FG_RED);
+            $this->stdout('Create your config by running: '.PHP_EOL, Console::FG_YELLOW);
+            $this->stdout('evo config <environmentName>'.PHP_EOL, Console::FG_GREEN);
+            return ExitCode::CONFIG;
+        }
+
+        $this->stdout(
+            Evo::getInstance()->getConfig()->getContents() . PHP_EOL,
+            Console::FG_CYAN
+        );
+
+        return ExitCode::OK;
+
     }
 
 }
