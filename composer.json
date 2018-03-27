@@ -22,7 +22,7 @@
     }
   },
   "require": {
-    "yiisoft/yii2": "^2.0.13.0",
+    "yiisoft/yii2": "<2.0.15",
     "aws/aws-sdk-php": "^3.0.0",
     "twig/twig": "~2.4.4",
     "symfony/yaml":"^3.0"
