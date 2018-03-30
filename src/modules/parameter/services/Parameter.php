@@ -18,7 +18,11 @@ class Parameter extends Client
 
     public function getClient($config = [])
     {
-        return parent::getClient($config)->createSsm();
+        if (! $this->client) {
+            $config = $this->getClientConfig($config);
+            $this->client = parent::getClient()->createSsm($config);
+        }
+        return $this->client;
     }
 
     /**
@@ -127,7 +131,10 @@ class Parameter extends Client
     {
         $dotEnv = implode('=', [
             $this->makeDotEnvName($item->name),
-            $item->value
+            /**
+             * Wrap everything with double-quotes
+             */
+            '"' . $item->value . '"'
         ]);
 
         return $dotEnv;

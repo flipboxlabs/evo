@@ -22,19 +22,10 @@ class Aws extends Module
     public function initComponents()
     {
         $this->setComponents([
-            'config' => Config::class,
             'client' => Client::class,
         ]);
     }
 
-
-    /**
-     * @return Config
-     */
-    public function getConfig()
-    {
-        return $this->get('config');
-    }
 
     /**
      * @return Client

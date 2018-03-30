@@ -187,6 +187,7 @@ Resources:
         - Effect: Allow
           Action:
           - "ssm:GetParameters"
+          - "ssm:GetParametersByPath"
           Resource:
           - !Sub
             - 'arn:aws:ssm:*:*:parameter/evo/${EbApplicationName}/*'

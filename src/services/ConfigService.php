@@ -27,6 +27,7 @@ use yii\base\Component;
  */
 class ConfigService extends Component
 {
+    const EVO_HOME_DIR = '.evo';
 
     public $file = EvoConstants::EVO_CONFIG_FILE;
     /**
@@ -40,6 +41,57 @@ class ConfigService extends Component
     protected $environment;
 
     /**
+     * Gets the environment's HOME directory if available.
+     *
+     * Notice: This is pulled from the CredentialProvider class from the
+     * aws php sdk.
+     *
+     * @return null|string
+     */
+    public static function getHomeDir()
+    {
+        // On Linux/Unix-like systems, use the HOME environment variable
+        if ($homeDir = getenv('HOME')) {
+            return $homeDir;
+        }
+
+        // Get the HOMEDRIVE and HOMEPATH values for Windows hosts
+        $homeDrive = getenv('HOMEDRIVE');
+        $homePath = getenv('HOMEPATH');
+
+        return ($homeDrive && $homePath) ? $homeDrive . $homePath : null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function createEvoHomeDirectory()
+    {
+        $this->getEvoHomeDirectory();
+        if (! $result = file_exists($this->getEvoHomeDirectory())) {
+            $result = mkdir($this->getEvoHomeDirectory());
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEvoHomeDirectory()
+    {
+        return self::getHomeDir() . '/' . static::EVO_HOME_DIR;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEvoHomeDirectory()
+    {
+        return file_exists($this->getEvoHomeDirectory());
+    }
+
+    /**
      * @param Environment $environment
      * @return $this
      */
@@ -49,6 +101,9 @@ class ConfigService extends Component
         return $this;
     }
 
+    /**
+     * @return Environment|null
+     */
     public function getEnvironment()
     {
         return $this->environment;

@@ -18,6 +18,32 @@ class ParamController extends AbstractAwsController
 
     protected $environmentalVariables = [];
 
+    /**
+     * Relative File Path for the output of the .env file
+     * @var string
+     */
+    public $out;
+
+    public function options($actionID)
+    {
+        return array_merge(
+            [
+                'out',
+            ],
+            parent::options($actionID)
+        );
+    }
+
+    public function optionAliases()
+    {
+        return array_merge(
+            [
+                'o'=>'out',
+            ],
+            parent::optionAliases()
+        );
+    }
+
     protected function initClient()
     {
         $config = $this->loadConfig();
@@ -39,9 +65,12 @@ class ParamController extends AbstractAwsController
 
         foreach ($dotEnvs as $dotEnv) {
             $this->stdout(
-                $this->getService()->toDotEnv($dotEnv) . PHP_EOL,
+                (string)$dotEnv . PHP_EOL,
                 Console::FG_CYAN
             );
+        }
+        if ($this->out) {
+            file_put_contents($this->out, implode(PHP_EOL, $dotEnvs));
         }
 
         return ExitCode::OK;

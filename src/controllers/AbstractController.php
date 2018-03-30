@@ -59,7 +59,7 @@ abstract class AbstractController extends Controller
     public function vout(string $debugText)
     {
         if ($this->verbose) {
-            $this->stdout($debugText . PHP_EOL, Console::FG_PURPLE);
+            $this->stdout('DEBUG ' . $debugText . PHP_EOL, Console::FG_PURPLE);
         }
     }
 
