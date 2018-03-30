@@ -1,7 +1,7 @@
 {
   "name": "flipboxlabs/evo",
   "type": "project",
-  "version": "0.0.1-beta.6",
+  "version": "0.0.1-beta.7",
   "description":"A Yii2 CLI application for managing environments.",
   "license":"MIT",
   "bin": [
