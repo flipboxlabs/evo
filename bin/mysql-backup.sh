@@ -19,12 +19,20 @@
 #sh bin/sql-backup.sh
 #```
 
+DB_NAME=''
+LOGIN_PATH=''
+
+#Pass the file bash file to this to populate the variables above
+SOURCE_VAR_FILE=$1
+
+if [ -z ${SOURCE_VAR_FILE+X} ] && [ ! -e "$SOURCE_VAR_FILE" ]; then
+    echo "File doesn't exist: $SOURCE_VAR_FILE"
+    exit 1;
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/../backups
 
 FILE=$DIR/backup-`date +%Y%m%d-%H%M%S`.sql
-
-DB_NAME='<EDIT THIS>'
-LOGIN_PATH='<EDIT THIS>'
 
 if [ ! -d "$DIR" ]; then
     mkdir $DIR;
@@ -51,3 +59,5 @@ mysqldump --login-path=$LOGIN_PATH -d $DB_NAME \
     craft_entryversions >> $FILE && \
 #WARNING! THIS SED COMMAND ONLY WORKS ON MAC
 sed -i '' 's/DEFINER=`[^`][^`]*`@`[^`][^`]*`//g' $FILE
+
+ln -s $FILE $DIR/latest.sql

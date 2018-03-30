@@ -13,8 +13,13 @@ DB_TABLE_PREFIX=''
 DB_PORT='3306'
 CRAFT_ENVIRONMENT=''
 
-## WARNING! For this to work we read in the .env file. It must be comapatible with bash so beware.
-source $REPO_ROOT".env"
+#Pass the file bash file to this to populate the variables above
+SOURCE_VAR_FILE=$1
+
+if [ -z ${SOURCE_VAR_FILE+X} ] && [ ! -e "$SOURCE_VAR_FILE" ]; then
+    echo "File doesn't exist: $SOURCE_VAR_FILE"
+    exit 1;
+fi
 
 #Append underscore if there is a table prefix
 if [ -n "$DB_TABLE_PREFIX" ]; then
