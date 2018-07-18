@@ -24,6 +24,9 @@ class ParamController extends AbstractAwsController
      */
     public $out;
 
+    /**
+     * @inheritdoc
+     */
     public function options($actionID)
     {
         return array_merge(
@@ -34,6 +37,9 @@ class ParamController extends AbstractAwsController
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function optionAliases()
     {
         return array_merge(
@@ -44,12 +50,18 @@ class ParamController extends AbstractAwsController
         );
     }
 
+    /**
+     *
+     */
     protected function initClient()
     {
         $config = $this->loadConfig();
         $this->client = Evo::getInstance()->getParameter()->getParameter()->getClient($config);
     }
 
+    /**
+     * @return int
+     */
     public function actionPrintDotenv()
     {
         $this->initClient();
@@ -140,6 +152,28 @@ class ParamController extends AbstractAwsController
         return ExitCode::OK;
     }
 
+    /**
+     * @param null $name
+     * @return int
+     */
+    public function actionDelete($name = null)
+    {
+        $this->initClient();
+
+        if(! $name) {
+            $name = $this->prompt($this->ansiFormat('Parameter Name: ', Console::FG_CYAN), [
+
+            ]);
+        }
+
+        $this->stdout(
+            sprintf('Deleting %s = %s', $this->ansiFormat($name, Console::FG_YELLOW), $this->ansiFormat('***', Console::FG_YELLOW) . PHP_EOL)
+        );
+
+        Evo::getInstance()->getParameter()->getParameter()->delete($name, $value);
+
+        return ExitCode::OK;
+    }
 
     /**
      * UTILs

@@ -16,6 +16,10 @@ class Parameter extends Client
 {
     const PARAMETER_NAMESPACE = '/evo';
 
+    /**
+     * @param array $config
+     * @return \Aws\Sdk|\Aws\Ssm\SsmClient
+     */
     public function getClient($config = [])
     {
         if (! $this->client) {
@@ -48,6 +52,11 @@ class Parameter extends Client
         return $dotEnvs;
     }
 
+    /**
+     * @param $name
+     * @param $value
+     * @return Result
+     */
     public function set($name, $value)
     {
         $path = $this->makeName($name);
@@ -60,11 +69,27 @@ class Parameter extends Client
         ]);
     }
 
+    /**
+     * @param $name
+     * @param bool $withDecryption
+     * @return Result
+     */
     public function get($name, $withDecryption = false)
     {
         return $this->getClient()->getParameter([
             'Name'           => $this->makeName($name),
             'WithDecryption' => $withDecryption,
+        ]);
+    }
+
+    /**
+     * @param $name
+     * @return Result
+     */
+    public function delete($name)
+    {
+        return $this->getClient()->deleteParameter([
+            'Name' => $this->makeName($name),
         ]);
     }
 
