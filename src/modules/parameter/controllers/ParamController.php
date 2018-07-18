@@ -25,6 +25,12 @@ class ParamController extends AbstractAwsController
     public $out;
 
     /**
+     * Tries to merge the local if exists
+     * @var bool
+     */
+    public $mergeLocal = true;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
@@ -32,6 +38,7 @@ class ParamController extends AbstractAwsController
         return array_merge(
             [
                 'out',
+                'mergeLocal'
             ],
             parent::options($actionID)
         );
@@ -44,7 +51,8 @@ class ParamController extends AbstractAwsController
     {
         return array_merge(
             [
-                'o'=>'out',
+                'o' => 'out',
+                'm' => 'mergeLocal',
             ],
             parent::optionAliases()
         );
@@ -71,6 +79,7 @@ class ParamController extends AbstractAwsController
          */
 
         $dotEnvs = array_merge(
+            $this->mergeLocal ? $this->getService()->getLocalDotEnvs() : [],
             $this->getService()->getLocal(),
             $this->getService()->getAllDotEnvs(true)
         );
@@ -160,7 +169,7 @@ class ParamController extends AbstractAwsController
     {
         $this->initClient();
 
-        if(! $name) {
+        if (! $name) {
             $name = $this->prompt($this->ansiFormat('Parameter Name: ', Console::FG_CYAN), [
 
             ]);

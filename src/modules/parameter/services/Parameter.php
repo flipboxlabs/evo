@@ -11,6 +11,8 @@ use Aws\Result;
 use flipboxlabs\evo\Evo;
 use flipboxlabs\evo\modules\aws\services\Client;
 use flipboxlabs\evo\modules\parameter\models\DotEnv;
+use flipboxlabs\evo\constants\Evo as EvoConstants;
+use flipboxlabs\evo\helpers\Dotenv as DotenvHelper;
 
 class Parameter extends Client
 {
@@ -30,7 +32,7 @@ class Parameter extends Client
     }
 
     /**
-     * Get all of the local env properties
+     * Get all of the local env properties from the evo config
      * @return DotEnv[]
      */
     public function getLocal($excludes = ['profile'])
@@ -45,6 +47,31 @@ class Parameter extends Client
 
             $dotEnvs[] = new DotEnv([
                 'name'  => $env->getDotEnvName($name),
+                'value' => $value,
+            ]);
+        }
+
+        return $dotEnvs;
+    }
+
+    /**
+     * Get all of the local envs from the .env file if it exists
+     * @return array
+     */
+    public function getLocalDotEnvs()
+    {
+        if (! file_exists(EvoConstants::DOT_ENV_LOCATION)) {
+            return [];
+        }
+
+        $dotEnv = new DotenvHelper(EvoConstants::DOT_ENV_LOCATION);
+        $dotEnv->load();
+
+        $dotEnvs = [];
+        foreach ($dotEnv->getEnvironmentVariables() as $name => $value) {
+
+            $dotEnvs[$this->makeDotEnvName($name)] = new DotEnv([
+                'name'  => $name,
                 'value' => $value,
             ]);
         }
@@ -103,7 +130,7 @@ class Parameter extends Client
         $results = $this->getAllFromEnv($withDecryption);
         $dotEnvs = [];
         foreach ($results->search('Parameters') as $result) {
-            $dotEnvs[] = new DotEnv([
+            $dotEnvs[$this->makeDotEnvName($result['Name'])] = new DotEnv([
                 'name'  => $result['Name'],
                 'value' => $result['Value'],
             ]);
@@ -113,6 +140,10 @@ class Parameter extends Client
 
     }
 
+    /**
+     * @param bool $withDecryption
+     * @return Result
+     */
     public function getAllFromEnv($withDecryption = false)
     {
 
@@ -140,6 +171,8 @@ class Parameter extends Client
     }
 
     /**
+     *
+     *
      * @param $path
      * @return null|string|string[]
      */
