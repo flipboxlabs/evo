@@ -13,7 +13,7 @@ use flipboxlabs\evo\modules\docker\models\ApacheComposeFile as ApacheModel;
 
 class ApacheComposeFile extends AbstractComposeFile
 {
-    const AMAZONLINIX_APACHE_71 = 'flipbox/php:71-amazonlinux-apache';
+    const AMAZONLINIX_APACHE_71 = 'flipbox/php:71-amazonlinux-apache-v2';
     const AMAZONLINIX_APACHE_70 = 'flipbox/php:70-amazonlinux-apache';
 
     const WEB_IMAGES = [
