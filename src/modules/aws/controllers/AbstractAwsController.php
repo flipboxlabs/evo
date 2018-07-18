@@ -14,6 +14,7 @@ use flipboxlabs\evo\modules\aws\credentials\AssumeRoleCredentialProviderWithMfa;
 use flipboxlabs\evo\modules\aws\credentials\CredentialCache;
 use flipboxlabs\evo\modules\aws\credentials\SourceProfileProvider;
 use flipboxlabs\evo\modules\aws\services\Client;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 abstract class AbstractAwsController extends AbstractController
@@ -80,14 +81,16 @@ abstract class AbstractAwsController extends AbstractController
     }
 
     /**
-     * @return array
+     * @return array|bool
      */
     protected function loadConfig()
     {
         $config = [];
 
         /** @var Environment $environment */
-        $environment = $this->getEnvironment();
+        if(! $environment = $this->getEnvironment()) {
+            return false;
+        }
 
         if ($this->mfaToken) {
             $config['tokenCode'] = $this->mfaToken;

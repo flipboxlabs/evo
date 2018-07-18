@@ -59,12 +59,16 @@ class ParamController extends AbstractAwsController
     }
 
     /**
-     *
+     * @return bool
      */
     protected function initClient()
     {
-        $config = $this->loadConfig();
+        if(!$config = $this->loadConfig()) {
+            return false;
+        }
         $this->client = Evo::getInstance()->getParameter()->getParameter()->getClient($config);
+
+        return true;
     }
 
     /**
@@ -72,7 +76,9 @@ class ParamController extends AbstractAwsController
      */
     public function actionPrintDotenv()
     {
-        $this->initClient();
+        if(! $this->initClient()) {
+            return ExitCode::CONFIG;
+        }
 
         /**
          * Prepend the local environment values from the EVO Config

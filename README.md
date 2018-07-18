@@ -19,6 +19,40 @@ To install, use composer:
 composer require flipboxlabs/evo
 ```
 
+## Getting Started
+Run `./vendor/bin/evo` for a list of commands. 
+
+### `cloudformation` 
+CloudFormation is still in development
+
+### `config`
+#### Command: `config/cat`
+
+- Run with `./vendor/bin/evo config`
+- Build your environment configurations
+
+#### Command: `config/cat`
+
+- Run with `./vendor/bin/evo config/cat`
+
+### `params`
+#### Command: `delete`
+- Run with `./vendor/bin/evo params/delete`
+- Deletes the parameter from AWS Parameter Store
+
+#### Command: `set`
+- Run with `./vendor/bin/evo params/set`
+- Sets the parameter from AWS Parameter Store
+
+#### Command: `get`
+- Run with `./vendor/bin/evo params/get`
+- Gets the parameter from AWS Parameter Store
+
+#### Command: `params/print-dotenv`
+- Run with `./vendor/bin/evo params/print-dotenv`
+- Prints a .env file to standard output (sdout) that you can write to 
+the location of your choosing. There is also an option for setting an output file. 
+
 ## Testing
 
 ``` bash
