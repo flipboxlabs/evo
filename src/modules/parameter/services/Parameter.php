@@ -45,7 +45,7 @@ class Parameter extends Client
             if (in_array($name, $excludes))
                 continue;
 
-            $dotEnvs[] = new DotEnv([
+            $dotEnvs[$env->getDotEnvName($name)] = new DotEnv([
                 'name'  => $env->getDotEnvName($name),
                 'value' => $value,
             ]);
@@ -60,7 +60,7 @@ class Parameter extends Client
      */
     public function getLocalDotEnvs()
     {
-        if (! file_exists(EvoConstants::DOT_ENV_LOCATION)) {
+        if (! file_exists(EvoConstants::DOT_ENV_LOCATION . '.env' )) {
             return [];
         }
 
