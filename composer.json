@@ -24,7 +24,7 @@
   "require": {
     "yiisoft/yii2": "~2.0.15.1",
     "aws/aws-sdk-php": "^3.0.0",
-    "twig/twig": "~2.4.4",
+    "twig/twig": "^2.4.4",
     "symfony/yaml":"^3.0"
   },
   "post-create-project-cmd": [
