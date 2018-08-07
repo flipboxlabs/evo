@@ -1,5 +1,9 @@
 Changelog
 =========
+## 1.0.2 - 2018-08-06
+### Changed
+- Twig dependency version to `^2.4.4` which accepts any version up to 3.0
+
 ## 1.0.1 - 2018-07-19
 ### Fixed
 - fixed a bug when there is no `.env` fill it won't error and make you sad
