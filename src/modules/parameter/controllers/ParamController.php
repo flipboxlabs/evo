@@ -185,7 +185,7 @@ class ParamController extends AbstractAwsController
             sprintf('Deleting %s = %s', $this->ansiFormat($name, Console::FG_YELLOW), $this->ansiFormat('***', Console::FG_YELLOW) . PHP_EOL)
         );
 
-        Evo::getInstance()->getParameter()->getParameter()->delete($name, $value);
+        Evo::getInstance()->getParameter()->getParameter()->delete($name);
 
         return ExitCode::OK;
     }
